@@ -5,6 +5,8 @@
 	Mary Allen
 
 	Programming Assignment 2 (Rust)
+	Rustup version: rustup 1.21.1 (7832b2ebe 2019-12-20)
+	System: Windows 10 Pro
 	
 	This program takes in a file containing baseball player information, and outputs to the screen calculated data about each player, such as batting average and on base percentage.
 
