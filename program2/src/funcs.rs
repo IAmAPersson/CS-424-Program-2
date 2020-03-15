@@ -46,9 +46,9 @@ pub fn ReadInFile(path: String) -> Result<String> {
 	Ok(filedata)
 }
 
-//Function: Parse the input file into a slice of BatterInfo (defined in types.go) and a []String of all the error messages
+//Function: Parse the input file into a vector of BatterInfo (defined in types.rs) and a Vec<String> of all the error messages
 pub fn ParseInfo(data: String) -> (Vec<BatterInfo>, Vec<String>) {
-	//Delcare two slices, a []BatterInfo to hold the parsed data for each batter, and a []String for all the error messages
+	//Delcare two vectors, a Vec<BatterInfo> to hold the parsed data for each batter, and a Vec<String> for all the error messages
 	let mut batters = Vec::<BatterInfo>::new();
 	let mut invalidString = Vec::<String>::new();
 	
@@ -64,7 +64,7 @@ pub fn ParseInfo(data: String) -> (Vec<BatterInfo>, Vec<String>) {
 		//increment the count variable
 		cnt = cnt + 1;
 		
-		//Declare two variables: one a slice of Strings for each token in the line, and one that's simply the input line split on spaces
+		//Declare two variables: one a vector of Strings for each token in the line, and one that's simply the input line split on spaces
 		let mut tokens = Vec::<String>::new();
 		let spaceSeparatedValues: Vec<String> = i.split(" ").map(|s| s.to_string()).collect();
 		
@@ -76,12 +76,12 @@ pub fn ParseInfo(data: String) -> (Vec<BatterInfo>, Vec<String>) {
 			}
 		}
 		
-		//If there are not 10 tokens in the line, then append the error to the []String to be returned, and continue from the top with the next line
+		//If there are not 10 tokens in the line, then append the error to the Vec<String> to be returned, and continue from the top with the next line
 		if tokens.len() != 10 {
 			invalidString.push(format!("Invalid line entered (line {})-- incorrect number of parameters.", char::from_digit(cnt, 10).unwrap()));
 			continue;
 		}
-		
+
 		//Create the batter struct
 		let mut batter = BatterInfo {
 			firstName: tokens[0].clone(),
@@ -98,7 +98,7 @@ pub fn ParseInfo(data: String) -> (Vec<BatterInfo>, Vec<String>) {
 		
 		//Individually convert and test for each field.
 		//I tried to condense this like I did in my Go program, to no avail. Rust was just not working with me on this one.
-		//I spent hours trying different approaches, and they all failed. This awful code was my last resort.
+		//I spent hours trying different approaches, and they all failed. This awful code was my last resort. Believe me, I tried Cells, I tried &mut, I tried everything.
 		//This is why I would make a bad software engineer (or why Rust is painful to work in--you decide).
 		batter.plateAppearances = match tokens[2].parse() {
 			Ok(num) => num,
@@ -164,7 +164,7 @@ pub fn ParseInfo(data: String) -> (Vec<BatterInfo>, Vec<String>) {
 			},
 		};
 		
-		//Append the temporary BatterInfo object to the BatterInfo slice
+		//Append the temporary BatterInfo object to the BatterInfo vector
 		batters.push(batter);
 	}
 	
@@ -188,12 +188,12 @@ pub fn PlayerSort(mut batters: Vec<BatterInfo>) -> Vec<BatterInfo> {
 	batters
 }
 
-//Function: Calculate all the data about the batters to a CalculatedBatterInfo slice
+//Function: Calculate all the data about the batters to a CalculatedBatterInfo vector
 pub fn Calculate(batters: Vec<BatterInfo>) -> Vec<CalculatedBatterInfo> {
-	//Make a slice of CalculatedBatterInfo with as many elements as there are in the batters slice
+	//Make a vector of CalculatedBatterInfo
 	let mut newbatters = Vec::<CalculatedBatterInfo>::new();
 	
-	//Iterate through the batters slice
+	//Iterate through the batters vector
 	for i in batters {
 		let batter = CalculatedBatterInfo {
 			//Copy over the first and last name
@@ -207,10 +207,11 @@ pub fn Calculate(batters: Vec<BatterInfo>) -> Vec<CalculatedBatterInfo> {
 			onBase: (i.singles + i.doubles + i.triples + i.homeRuns + i.walks + i.hitByPitch) as f64 / i.plateAppearances as f64,
 		};
 		
+		//Push the CalculatedBatterInfo object to the newbatters vector.
 		newbatters.push(batter);
 	}
 	
-	//Return the CalculatedBatterInfo slice
+	//Return the CalculatedBatterInfo vector
 	newbatters
 }
 
@@ -219,13 +220,13 @@ pub fn Average(batters: &Vec<CalculatedBatterInfo>) -> f64 {
 	//Create a float64 for a running total, initialized to 0.0
 	let mut runningTotal = 0 as f64;
 	
-	//Iterate through the batters slice
+	//Iterate through the batters vector
 	for i in batters {
 		//Add to the running total
 		runningTotal = runningTotal + i.average;
 	}
 	
-	//Return the running total divided by the length of the inputted slice (i.e. the average)
+	//Return the running total divided by the length of the inputted vector (i.e. the average)
 	runningTotal / batters.len() as f64
 }
 
@@ -239,7 +240,7 @@ pub fn FormatData(batters: Vec<CalculatedBatterInfo>, errorlines: Vec<String>) {
 	println!("    PLAYER NAME      :    AVERAGE  SLUGGING   ONBASE%");
 	println!("-----------------------------------------------------");
 	
-	//Iterate through the batters slice and print the information, formatted to the screen
+	//Iterate through the batters vector and print the information, formatted to the screen
 	for i in batters {
 		println!("{:20} :      {:.3}     {:.3}     {:.3}", format!("{}, {}", i.lastName, i.firstName), i.average, i.slugging, i.onBase);
 	}
