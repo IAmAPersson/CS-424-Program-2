@@ -16,7 +16,6 @@ use std::fs;
 use std::io::Result;
 use std::vec::Vec;
 use std::char;
-use std::cell::Cell;
 
 //Function: Get the path of file to read from
 pub fn GetPath() -> String {
@@ -83,7 +82,8 @@ pub fn ParseInfo(data: String) -> (Vec<BatterInfo>, Vec<String>) {
 			continue;
 		}
 		
-		let batter = BatterInfo {
+		//Create the batter struct
+		let mut batter = BatterInfo {
 			firstName: tokens[0].clone(),
 			lastName: tokens[1].clone(),
 			plateAppearances: 0,
@@ -95,43 +95,74 @@ pub fn ParseInfo(data: String) -> (Vec<BatterInfo>, Vec<String>) {
 			walks: 0,
 			hitByPitch: 0
 		};
-		/*let batter = panic::catch_unwind(|| { BatterInfo {
-			firstName: tokens[0].clone(),
-			lastName: tokens[1].clone(),
-			plateAppearances: tokens[2].parse().unwrap(),
-			atBats: tokens[3].parse().unwrap(),
-			singles: tokens[4].parse().unwrap(),
-			doubles: tokens[5].parse().unwrap(),
-			triples: tokens[6].parse().unwrap(),
-			homeRuns: tokens[7].parse().unwrap(),
-			walks: tokens[8].parse().unwrap(),
-			hitByPitch: tokens[9].parse().unwrap(),
-		}});*/
 		
-		let fields: Vec<Cell<u64>> = vec![ Cell::new(batter.plateAppearances), Cell::new(batter.atBats), Cell::new(batter.singles), Cell::new(batter.doubles), Cell::new(batter.triples), Cell::new(batter.homeRuns), Cell::new(batter.walks), Cell::new(batter.hitByPitch) ];
-		let mut cnt2: usize = 2;
-		
-		for i in fields {
-			match tokens[cnt2].parse() {
-				Ok(num) => {
-					i.set(num);
-				},
-				Err(_err) => {
-					invalidString.push(format!("Invalid line entered (line {})-- illegal type of parameter.", char::from_digit(cnt, 10).unwrap()));
-					continue 'PrimaryLoop;
-				},
-			}
-			
-			cnt2 = cnt2 + 1;
-		}
-		
-		/*let resbatter = match batter {
-			Ok(res) => res,
+		//Individually convert and test for each field.
+		//I tried to condense this like I did in my Go program, to no avail. Rust was just not working with me on this one.
+		//I spent hours trying different approaches, and they all failed. This awful code was my last resort.
+		//This is why I would make a bad software engineer (or why Rust is painful to work in--you decide).
+		batter.plateAppearances = match tokens[2].parse() {
+			Ok(num) => num,
 			Err(_err) => {
 				invalidString.push(format!("Invalid line entered (line {})-- illegal type of parameter.", char::from_digit(cnt, 10).unwrap()));
 				continue 'PrimaryLoop;
-			}
-		};*/
+			},
+		};
+		
+		batter.atBats = match tokens[3].parse() {
+			Ok(num) => num,
+			Err(_err) => {
+				invalidString.push(format!("Invalid line entered (line {})-- illegal type of parameter.", char::from_digit(cnt, 10).unwrap()));
+				continue 'PrimaryLoop;
+			},
+		};
+		
+		batter.singles = match tokens[4].parse() {
+			Ok(num) => num,
+			Err(_err) => {
+				invalidString.push(format!("Invalid line entered (line {})-- illegal type of parameter.", char::from_digit(cnt, 10).unwrap()));
+				continue 'PrimaryLoop;
+			},
+		};
+		
+		batter.doubles = match tokens[5].parse() {
+			Ok(num) => num,
+			Err(_err) => {
+				invalidString.push(format!("Invalid line entered (line {})-- illegal type of parameter.", char::from_digit(cnt, 10).unwrap()));
+				continue 'PrimaryLoop;
+			},
+		};
+		
+		batter.triples = match tokens[6].parse() {
+			Ok(num) => num,
+			Err(_err) => {
+				invalidString.push(format!("Invalid line entered (line {})-- illegal type of parameter.", char::from_digit(cnt, 10).unwrap()));
+				continue 'PrimaryLoop;
+			},
+		};
+		
+		batter.homeRuns = match tokens[7].parse() {
+			Ok(num) => num,
+			Err(_err) => {
+				invalidString.push(format!("Invalid line entered (line {})-- illegal type of parameter.", char::from_digit(cnt, 10).unwrap()));
+				continue 'PrimaryLoop;
+			},
+		};
+		
+		batter.walks = match tokens[8].parse() {
+			Ok(num) => num,
+			Err(_err) => {
+				invalidString.push(format!("Invalid line entered (line {})-- illegal type of parameter.", char::from_digit(cnt, 10).unwrap()));
+				continue 'PrimaryLoop;
+			},
+		};
+		
+		batter.hitByPitch = match tokens[9].parse() {
+			Ok(num) => num,
+			Err(_err) => {
+				invalidString.push(format!("Invalid line entered (line {})-- illegal type of parameter.", char::from_digit(cnt, 10).unwrap()));
+				continue 'PrimaryLoop;
+			},
+		};
 		
 		//Append the temporary BatterInfo object to the BatterInfo slice
 		batters.push(batter);
@@ -162,22 +193,21 @@ pub fn Calculate(batters: Vec<BatterInfo>) -> Vec<CalculatedBatterInfo> {
 	//Make a slice of CalculatedBatterInfo with as many elements as there are in the batters slice
 	let mut newbatters = Vec::<CalculatedBatterInfo>::new();
 	
-	//create a count variable for counting line numbers
-	let mut cnt: usize = 0;
-	
 	//Iterate through the batters slice
 	for i in batters {
-		cnt = cnt + 1;
+		let batter = CalculatedBatterInfo {
+			//Copy over the first and last name
+			firstName: i.firstName,
+			lastName: i.lastName,
+			//Calculate the batting average
+			average: (i.singles + i.doubles + i.triples + i.homeRuns) as f64 / i.atBats as f64,
+			//Calculate the slugging average
+			slugging: (i.singles + 2 * i.doubles + 3 * i.triples + 4 * i.homeRuns) as f64 / i.atBats as f64,
+			//Calculate the on base percent
+			onBase: (i.singles + i.doubles + i.triples + i.homeRuns + i.walks + i.hitByPitch) as f64 / i.plateAppearances as f64,
+		};
 		
-		//Copy over the first and last name
-		newbatters[cnt].firstName = i.firstName;
-		newbatters[cnt].lastName = i.lastName;
-		//Calculate the batting average
-		newbatters[cnt].average = (i.singles + i.doubles + i.triples + i.homeRuns) as f64 / i.atBats as f64;
-		//Calculate the slugging average
-		newbatters[cnt].slugging = (i.singles + 2 * i.doubles + 3 * i.triples + 4 * i.homeRuns) as f64 / i.atBats as f64;
-		//Calculate the on base percent
-		newbatters[cnt].onBase = (i.singles + i.doubles + i.triples + i.homeRuns + i.walks + i.hitByPitch) as f64 / i.plateAppearances as f64;
+		newbatters.push(batter);
 	}
 	
 	//Return the CalculatedBatterInfo slice
