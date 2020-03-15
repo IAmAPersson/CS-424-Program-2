@@ -12,6 +12,7 @@
 	Classes are unused-- I stick to global functions and structs.
 */
 
+#![allow(non_snake_case)]
 mod funcs;
 use funcs::GetPath;
 use funcs::ReadInFile;

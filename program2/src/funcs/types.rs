@@ -7,6 +7,8 @@
 	Programming Assignment 2 (Rust)
 */
 
+#![allow(non_snake_case)]
+
 //Type: Inputted batter information
 pub struct BatterInfo {
 	pub firstName: String,
